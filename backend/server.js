@@ -18,16 +18,21 @@ const razorpay = new Razorpay({
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
 app.use(express.json());
 app.use('/images', express.static('images'));
 
 // MySQL connection
 async function connectDB() {
   return await mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'rysf@RYSF123',
+    host: 'database-3.cr2ue6u44sny.eu-north-1.rds.amazonaws.com',
+    user: 'admin',
+    password: 'ramchin123',
     database: 'hospital_ecom',
   });
 }
@@ -107,7 +112,6 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
-// Get products by category
 app.get('/api/products/:category', async (req, res) => {
   const category = decodeURIComponent(req.params.category);
   const connection = await connectDB();
@@ -121,7 +125,30 @@ app.get('/api/products/:category', async (req, res) => {
       return res.status(404).json({ message: 'No products found for this category.' });
     }
 
-    res.json(products);
+    // Add image_data field
+    const productsWithImages = products.map(product => {
+      let imageData = "";
+      if (product.image_url) {
+        try {
+          const imagePath = path.join(__dirname, 'images', product.image_url);
+          if (fs.existsSync(imagePath)) {
+            imageData = fs.readFileSync(imagePath, { encoding: 'base64' });
+          }
+        } catch (err) {
+          console.error(`Error reading image for product ${product.id}:`, err.message);
+        }
+      }
+      return {
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        stock_quantity: product.stock_quantity,
+        image_data: imageData
+      };
+    });
+
+    res.json(productsWithImages);
   } catch (error) {
     console.error('Error fetching products by category:', error);
     res.status(500).json({ error: 'Failed to fetch products' });
@@ -129,6 +156,7 @@ app.get('/api/products/:category', async (req, res) => {
     connection.end();
   }
 });
+
 
 // Get single product by ID
 app.get('/api/product/:id', async (req, res) => {
@@ -503,7 +531,24 @@ app.post('/api/add-address', async (req, res) => {
   }
 });
 
+app.get('/api/image-base64/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const imagePath = path.join(__dirname, 'images', filename);
+  try {
+    if (!fs.existsSync(imagePath)) {
+      return res.status(404).json({ error: 'Image not found' });
+    }
+    const ext = path.extname(filename).slice(1);
+    const base64 = fs.readFileSync(imagePath, { encoding: 'base64' });
+    res.json({ image: `data:image/${ext};base64,${base64}` });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to convert image', details: err.message });
+  }
+});
+
+
+
 // Start the server
-app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Server running at http://0.0.0.0:${PORT}`);
 });

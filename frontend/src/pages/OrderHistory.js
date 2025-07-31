@@ -19,16 +19,16 @@ function OrderHistory() {
       return;
     }
 
-    axios.get(`http://localhost:5000/api/user-profile/${userId}`)
+    axios.get(`http://56.228.36.23/api/user-profile/${userId}`)
       .then(res => {
         setProfile(res.data);
         if (res.data.profileImage) {
-          setImagePreview(`http://localhost:5000/uploads/${res.data.profileImage}`);
+          setImagePreview(`http://56.228.36.23/uploads/${res.data.profileImage}`);
         }
       })
       .catch(err => console.error("Profile fetch error:", err));
 
-    axios.get(`http://localhost:5000/api/order-history/${userId}`)
+    axios.get(`http://56.228.36.23/api/order-history/${userId}`)
       .then(res => {
         if (res.data.success) {
           setOrders(res.data.orders);
@@ -68,7 +68,7 @@ function OrderHistory() {
         formData.append('profileImage', profileImage);
       }
 
-      const res = await axios.put(`http://localhost:5000/api/update-user/${userId}`, formData, {
+      const res = await axios.put(`http://56.228.36.23/api/update-user/${userId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -78,7 +78,7 @@ function OrderHistory() {
         alert("✅ Profile updated successfully");
         setIsEditing(false);
         if (res.data.profileImage) {
-          setImagePreview(`http://localhost:5000/uploads/${res.data.profileImage}`);
+          setImagePreview(`http://56.228.36.23/uploads/${res.data.profileImage}`);
         }
       } else {
         alert("Update failed");

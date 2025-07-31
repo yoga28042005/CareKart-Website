@@ -1,34 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FaShoppingCart, FaHeart, FaUser, FaHome, FaInfoCircle, FaPhoneAlt, FaSignInAlt, FaSearch } from "react-icons/fa";
+import {
+  FaShoppingCart, FaHeart, FaUser, FaHome, FaInfoCircle,
+  FaPhoneAlt, FaSignInAlt, FaSearch
+} from "react-icons/fa";
 
 function Home() {
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [logoData, setLogoData] = useState(""); // 🩷 logo base64
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 🩷 sidebar toggle
   const navigate = useNavigate();
 
-  // Fetch categories
   useEffect(() => {
     setIsLoading(true);
     axios
-      .get("http://localhost:5000/api/categories")
-      .then((res) => {
-        setCategories(res.data);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching categories:", err);
-        setIsLoading(false);
-      });
+      .get("http://56.228.36.23/api/categories")
+      .then((res) => { setCategories(res.data); setIsLoading(false); })
+      .catch((err) => { console.error("Error fetching categories:", err); setIsLoading(false); });
+
+    // load logo
+    axios
+      .get("http://56.228.36.23/api/image-base64/carekart-logo.jpeg")
+      .then((res) => { setLogoData(res.data.image); })
+      .catch((err) => { console.error("Error loading logo:", err); });
   }, []);
 
   const filteredCategories = categories.filter(
-    (cat) =>
-      cat &&
-      typeof cat === "string" &&
-      cat.toLowerCase().includes(searchTerm.toLowerCase())
+    (cat) => cat && typeof cat === "string" && cat.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const pastelColors = [
@@ -48,62 +49,80 @@ function Home() {
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between w-full h-16 px-6 py-3 text-white bg-pink-600 shadow-sm">
         <div className="flex items-center text-xl font-bold text-white">
           <img
-            src="/images/carekart-logo.jpeg"
+            src={logoData || "https://via.placeholder.com/48"}
             alt="CareKart Logo"
             className="object-cover w-12 h-12 mr-2 rounded-full"
           />
           <span className="hidden sm:inline">CareKart</span>
         </div>
 
-        <div className="flex items-center space-x-4 text-sm font-medium text-white">
-          <a href="/" className="flex items-center px-3 py-1 transition-all rounded hover:bg-pink-700">
-            <FaHome className="mr-1" /> Home
-          </a>
-          <a href="/cart" className="flex items-center px-3 py-1 transition-all rounded hover:bg-pink-700">
-            <FaShoppingCart className="mr-1" /> Cart
-          </a>
-          <a href="/order-history" className="flex items-center px-3 py-1 transition-all rounded hover:bg-pink-700">
-            <FaUser className="mr-1" /> My Profile
-          </a>
-          <a href="/wishlist" className="flex items-center px-3 py-1 transition-all rounded hover:bg-pink-700">
-            <FaHeart className="mr-1" /> Wishlist
-          </a>
-          <a href="/about" className="items-center hidden px-3 py-1 transition-all rounded md:flex hover:bg-pink-700">
-            <FaInfoCircle className="mr-1" /> About
-          </a>
-          <a href="/contact" className="items-center hidden px-3 py-1 transition-all rounded md:flex hover:bg-pink-700">
-            <FaPhoneAlt className="mr-1" /> Contact
-          </a>
-          <a href="/login" className="flex items-center px-3 py-1 text-pink-600 transition-all bg-white rounded hover:bg-gray-100">
-            <FaSignInAlt className="mr-1" /> Login
-          </a>
+        {/* Desktop menu */}
+        <div className="items-center hidden space-x-4 text-sm font-medium text-white md:flex">
+          <a href="/" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaHome className="mr-1" /> Home</a>
+          <a href="/cart" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaShoppingCart className="mr-1" /> Cart</a>
+          <a href="/order-history" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaUser className="mr-1" /> My Profile</a>
+          <a href="/wishlist" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaHeart className="mr-1" /> Wishlist</a>
+          <a href="/about" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaInfoCircle className="mr-1" /> About</a>
+          <a href="/contact" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaPhoneAlt className="mr-1" /> Contact</a>
+          <a href="/login" className="flex items-center px-3 py-1 text-pink-600 bg-white rounded hover:bg-gray-100"><FaSignInAlt className="mr-1" /> Login</a>
         </div>
+
+        {/* Mobile menu button */}
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="p-2 ml-2 text-white rounded md:hidden hover:bg-pink-700 focus:outline-none"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
       </nav>
 
-      {/* Main Content */}
+      {/* Mobile sidebar */}
+      {isSidebarOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-30"
+            onClick={() => setIsSidebarOpen(false)}
+          ></div>
+          {/* Sidebar */}
+          <div className="relative z-50 flex flex-col w-64 h-full p-6 space-y-4 text-white bg-pink-600">
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="self-end p-1 text-white hover:text-pink-200"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <a href="/" className="flex items-center px-3 py-2 rounded hover:bg-pink-700"><FaHome className="mr-2" /> Home</a>
+            <a href="/cart" className="flex items-center px-3 py-2 rounded hover:bg-pink-700"><FaShoppingCart className="mr-2" /> Cart</a>
+            <a href="/order-history" className="flex items-center px-3 py-2 rounded hover:bg-pink-700"><FaUser className="mr-2" /> My Profile</a>
+            <a href="/wishlist" className="flex items-center px-3 py-2 rounded hover:bg-pink-700"><FaHeart className="mr-2" /> Wishlist</a>
+            <a href="/about" className="flex items-center px-3 py-2 rounded hover:bg-pink-700"><FaInfoCircle className="mr-2" /> About</a>
+            <a href="/contact" className="flex items-center px-3 py-2 rounded hover:bg-pink-700"><FaPhoneAlt className="mr-2" /> Contact</a>
+            <a href="/login" className="flex items-center px-3 py-2 text-pink-600 bg-white rounded hover:bg-gray-100"><FaSignInAlt className="mr-2" /> Login</a>
+          </div>
+        </div>
+      )}
+
+      {/* Main content */}
       <div className="w-full px-4 pb-12 pt-28 md:px-8 lg:px-16">
-        {/* Hero Section */}
+        {/* Hero */}
         <div className="flex flex-col items-center justify-center mb-12 text-center">
           <h1 className="mb-4 text-4xl font-bold text-gray-800 md:text-5xl">
             Welcome to{" "}
-            <span
-              className="text-pink-600 inline-block animate-[zoomInOut_2s_ease-in-out_infinite]"
-              style={{
-                animation: "zoomInOut 2s ease-in-out infinite",
-              }}
-            >
-              CareKart
-            </span>
+            <span className="text-pink-600 inline-block animate-[zoomInOut_2s_ease-in-out_infinite]"
+              style={{ animation: "zoomInOut 2s ease-in-out infinite" }}>CareKart</span>
           </h1>
           <style jsx>{`
             @keyframes zoomInOut {
-              0%, 100% { transform: scale(1); }
+              0%,100% { transform: scale(1); }
               50% { transform: scale(1.1); }
             }
           `}</style>
-          <p className="max-w-2xl text-lg text-gray-600">
-            Your trusted healthcare partner. Quality medical products delivered with care.
-          </p>
+          <p className="max-w-2xl text-lg text-gray-600">Your trusted healthcare partner. Quality medical products delivered with care.</p>
         </div>
 
         {/* Search */}
@@ -122,23 +141,15 @@ function Home() {
 
         {/* Categories */}
         <div className="mb-12">
-          <h2 className="mb-6 text-2xl font-semibold text-center text-gray-800">
-            Browse Categories
-          </h2>
+          <h2 className="mb-6 text-2xl font-semibold text-center text-gray-800">Browse Categories</h2>
           {isLoading ? (
-            <div className="flex justify-center">
-              <div className="w-8 h-8 border-4 border-pink-300 rounded-full border-t-transparent animate-spin"></div>
-            </div>
+            <div className="flex justify-center"><div className="w-8 h-8 border-4 border-pink-300 rounded-full border-t-transparent animate-spin"></div></div>
           ) : filteredCategories.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {filteredCategories.map((cat, index) => (
-                <button
-                  key={index}
+                <button key={index}
                   onClick={() => navigate(`/products/${encodeURIComponent(cat)}`)}
-                  className={`px-6 py-4 text-lg font-medium rounded-lg shadow-sm transition-all hover:shadow-md ${
-                    pastelColors[index % pastelColors.length]
-                  }`}
-                >
+                  className={`px-6 py-4 text-lg font-medium rounded-lg shadow-sm transition-all hover:shadow-md ${pastelColors[index % pastelColors.length]}`}>
                   {cat}
                 </button>
               ))}
@@ -146,23 +157,17 @@ function Home() {
           ) : (
             <div className="p-8 text-center bg-white rounded-lg shadow-sm">
               <p className="text-gray-600">No categories found matching your search.</p>
-              <button
-                onClick={() => setSearchTerm("")}
-                className="px-4 py-2 mt-4 text-white bg-pink-600 rounded-lg hover:bg-pink-700"
-              >
-                Clear Search
-              </button>
+              <button onClick={() => setSearchTerm("")}
+                className="px-4 py-2 mt-4 text-white bg-pink-600 rounded-lg hover:bg-pink-700">Clear Search</button>
             </div>
           )}
         </div>
 
-        {/* Health Tip */}
+        {/* Health tip */}
         <div className="p-6 mb-12 text-gray-800 bg-white border border-gray-100 rounded-lg shadow-sm">
           <h3 className="mb-2 text-xl font-semibold">Health Tip</h3>
           <p className="mb-4">Regular hand washing is one of the best ways to prevent the spread of infections.</p>
-          <button className="px-4 py-2 text-sm font-medium text-pink-600 bg-white border border-pink-200 rounded-lg hover:bg-pink-50">
-            View More Tips
-          </button>
+          <button className="px-4 py-2 text-sm font-medium text-pink-600 bg-white border border-pink-200 rounded-lg hover:bg-pink-50">View More Tips</button>
         </div>
       </div>
 

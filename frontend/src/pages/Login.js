@@ -21,7 +21,7 @@ function Login() {
     if (!validate()) return;
 
     try {
-      const res = await axios.post('http://localhost:5000/login', { username, password });
+      const res = await axios.post('http://56.228.36.23/login', { username, password });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("userId", res.data.userId);
       alert(res.data.message);

@@ -90,7 +90,7 @@ const CheckoutPage = () => {
       const userId = localStorage.getItem('userId');
       const isFirstAddress = addresses.length === 0;
       
-      const response = await axios.post('http://localhost:5000/api/add-address', {
+      const response = await axios.post('http://56.228.36.23/api/add-address', {
         userId,
         ...newAddress,
         isDefault: isFirstAddress
@@ -127,7 +127,7 @@ const CheckoutPage = () => {
       const transactionId = `TXN${Date.now()}${Math.floor(Math.random() * 1000)}`;
       
       const response = await axios.post(
-        'http://localhost:5000/api/generate-upi-link',
+        'http://56.228.36.23/api/generate-upi-link',
         {
           amount: totalPrice,
           orderId: `order_${Date.now()}`,
@@ -165,7 +165,7 @@ const CheckoutPage = () => {
       }
 
       // Create order on backend
-      const orderResponse = await axios.post('http://localhost:5000/api/create-order', {
+      const orderResponse = await axios.post('http://56.228.36.23/api/create-order', {
         amount: totalPrice,
         receipt: `order_${Date.now()}`
       });
@@ -220,7 +220,7 @@ const CheckoutPage = () => {
       const userId = localStorage.getItem('userId');
       
       if (isFirstTimeUser) {
-        await axios.post('http://localhost:5000/api/add-address', {
+        await axios.post('http://56.228.36.23/api/add-address', {
           userId,
           name: userDetails.name,
           address: userDetails.address,
@@ -256,7 +256,7 @@ const CheckoutPage = () => {
       };
 
       const response = await axios.post(
-        'http://localhost:5000/api/place-order',
+        'http://56.228.36.23/api/place-order',
         payload
       );
 
@@ -268,7 +268,7 @@ const CheckoutPage = () => {
 
           if (productId && quantityPurchased > 0) {
             try {
-              await axios.post('http://localhost:5000/api/update-stock', {
+              await axios.post('http://56.228.36.23/api/update-stock', {
                 productId,
                 quantityPurchased,
               });
@@ -309,10 +309,10 @@ const CheckoutPage = () => {
       try {
         const userId = localStorage.getItem('userId');
         if (userId) {
-          const profileRes = await axios.get(`http://localhost:5000/api/user-profile/${userId}`);
+          const profileRes = await axios.get(`http://56.228.36.23/api/user-profile/${userId}`);
           const userEmail = profileRes.data.email;
           
-          const addressesRes = await axios.get(`http://localhost:5000/api/user-addresses/${userId}`);
+          const addressesRes = await axios.get(`http://56.228.36.23/api/user-addresses/${userId}`);
           
           if (addressesRes.data.addresses.length === 0) {
             setIsFirstTimeUser(true);

@@ -1,13 +1,40 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useWishlist } from "../contexts/WishlistContext";
 import { useCart } from "../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import { FaTrash, FaShoppingCart, FaCreditCard, FaArrowLeft, FaHeart } from "react-icons/fa";
+import axios from "axios"; // npm install axios if needed
 
 const WishlistPage = () => {
   const { wishlist, removeFromWishlist, clearWishlist } = useWishlist();
   const { addToCart, isInCart } = useCart();
   const navigate = useNavigate();
+
+  // 🧩 State to hold base64 images
+  const [images, setImages] = useState({});
+
+  // Load base64 images whenever wishlist changes
+  useEffect(() => {
+    const loadImages = async () => {
+      const newImages = {};
+      for (const item of wishlist) {
+        if (item.image_url) {
+          try {
+            const res = await axios.get(`${process.env.REACT_APP_API_URL || 'http://56.228.36.23'}/api/image-base64/${item.image_url}`);
+            newImages[item.id] = res.data.image;
+          } catch (err) {
+            console.error("Failed to load image:", err);
+            newImages[item.id] = "https://via.placeholder.com/300";
+          }
+        } else {
+          newImages[item.id] = "https://via.placeholder.com/300";
+        }
+      }
+      setImages(newImages);
+    };
+
+    loadImages();
+  }, [wishlist]);
 
   const handleMoveToCart = (product) => {
     if (!isInCart(product.id)) {
@@ -30,7 +57,7 @@ const WishlistPage = () => {
   return (
     <div className="min-h-screen p-4 bg-gradient-to-br from-pink-50 via-purple-50 to-green-50">
       <div className="max-w-5xl mx-auto">
-        {/* Header with Back Button */}
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => navigate(-1)}
@@ -38,10 +65,10 @@ const WishlistPage = () => {
           >
             <FaArrowLeft /> Back
           </button>
-          <h1 className="text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-green-500">
+          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-green-500">
             Your Wishlist
           </h1>
-          <div className="w-10"></div> {/* Spacer for alignment */}
+          <div className="w-10"></div> {/* Spacer */}
         </div>
 
         {wishlist.length === 0 ? (
@@ -64,7 +91,7 @@ const WishlistPage = () => {
                 <div key={item.id} className="overflow-hidden transition-shadow bg-white shadow-md rounded-xl hover:shadow-lg">
                   <div className="relative">
                     <img
-                      src={item.image_url ? `http://localhost:3000/images/${item.image_url}` : "https://via.placeholder.com/300"}
+                      src={images[item.id] || "https://via.placeholder.com/300"}
                       alt={item.name}
                       className="object-cover w-full h-48"
                     />

@@ -32,7 +32,7 @@ function Signup() {
     if (!validate()) return;
 
     try {
-      await axios.post('http://localhost:5000/signup', form);
+      await axios.post('http://56.228.36.23/signup', form);
       alert('Signup successful');
       navigate('/login');
     } catch (err) {
