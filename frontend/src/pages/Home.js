@@ -10,8 +10,8 @@ function Home() {
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [logoData, setLogoData] = useState(""); // 🩷 logo base64
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 🩷 sidebar toggle
+  const [logoData, setLogoData] = useState(""); // 🩷 logo as base64
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // 🩷 mobile menu toggle
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,7 +21,7 @@ function Home() {
       .then((res) => { setCategories(res.data); setIsLoading(false); })
       .catch((err) => { console.error("Error fetching categories:", err); setIsLoading(false); });
 
-    // load logo
+    // Load logo
     axios
       .get("http://56.228.36.23/api/image-base64/carekart-logo.jpeg")
       .then((res) => { setLogoData(res.data.image); })
@@ -68,48 +68,32 @@ function Home() {
         </div>
 
         {/* Mobile menu button */}
-        <button
-          onClick={() => setIsSidebarOpen(true)}
-          className="p-2 ml-2 text-white rounded md:hidden hover:bg-pink-700 focus:outline-none"
-        >
+        <button onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="p-2 ml-2 text-white rounded md:hidden hover:bg-pink-700 focus:outline-none">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            {isMenuOpen
+              ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
           </svg>
         </button>
       </nav>
 
-      {/* Mobile sidebar */}
-      {isSidebarOpen && (
-        <div className="fixed inset-0 z-50 flex">
-          {/* Overlay */}
-          <div
-            className="fixed inset-0 bg-black bg-opacity-30"
-            onClick={() => setIsSidebarOpen(false)}
-          ></div>
-          {/* Sidebar */}
-          <div className="relative z-50 flex flex-col w-64 h-full p-6 space-y-4 text-white bg-pink-600">
-            <button
-              onClick={() => setIsSidebarOpen(false)}
-              className="self-end p-1 text-white hover:text-pink-200"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <a href="/" className="flex items-center px-3 py-2 rounded hover:bg-pink-700"><FaHome className="mr-2" /> Home</a>
-            <a href="/cart" className="flex items-center px-3 py-2 rounded hover:bg-pink-700"><FaShoppingCart className="mr-2" /> Cart</a>
-            <a href="/order-history" className="flex items-center px-3 py-2 rounded hover:bg-pink-700"><FaUser className="mr-2" /> My Profile</a>
-            <a href="/wishlist" className="flex items-center px-3 py-2 rounded hover:bg-pink-700"><FaHeart className="mr-2" /> Wishlist</a>
-            <a href="/about" className="flex items-center px-3 py-2 rounded hover:bg-pink-700"><FaInfoCircle className="mr-2" /> About</a>
-            <a href="/contact" className="flex items-center px-3 py-2 rounded hover:bg-pink-700"><FaPhoneAlt className="mr-2" /> Contact</a>
-            <a href="/login" className="flex items-center px-3 py-2 text-pink-600 bg-white rounded hover:bg-gray-100"><FaSignInAlt className="mr-2" /> Login</a>
-          </div>
+      {/* Mobile dropdown menu */}
+      {isMenuOpen && (
+        <div className="z-40 flex flex-col items-start w-full px-6 py-3 space-y-2 text-sm font-medium text-white bg-pink-600 md:hidden">
+          <a href="/" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaHome className="mr-1" /> Home</a>
+          <a href="/cart" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaShoppingCart className="mr-1" /> Cart</a>
+          <a href="/order-history" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaUser className="mr-1" /> My Profile</a>
+          <a href="/wishlist" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaHeart className="mr-1" /> Wishlist</a>
+          <a href="/about" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaInfoCircle className="mr-1" /> About</a>
+          <a href="/contact" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaPhoneAlt className="mr-1" /> Contact</a>
+          <a href="/login" className="flex items-center w-full px-3 py-2 text-pink-600 bg-white rounded hover:bg-gray-100"><FaSignInAlt className="mr-1" /> Login</a>
         </div>
       )}
 
       {/* Main content */}
       <div className="w-full px-4 pb-12 pt-28 md:px-8 lg:px-16">
-        {/* Hero */}
+        {/* Hero section */}
         <div className="flex flex-col items-center justify-center mb-12 text-center">
           <h1 className="mb-4 text-4xl font-bold text-gray-800 md:text-5xl">
             Welcome to{" "}
@@ -122,7 +106,9 @@ function Home() {
               50% { transform: scale(1.1); }
             }
           `}</style>
-          <p className="max-w-2xl text-lg text-gray-600">Your trusted healthcare partner. Quality medical products delivered with care.</p>
+          <p className="max-w-2xl text-lg text-gray-600">
+            Your trusted healthcare partner. Quality medical products delivered with care.
+          </p>
         </div>
 
         {/* Search */}
@@ -167,7 +153,9 @@ function Home() {
         <div className="p-6 mb-12 text-gray-800 bg-white border border-gray-100 rounded-lg shadow-sm">
           <h3 className="mb-2 text-xl font-semibold">Health Tip</h3>
           <p className="mb-4">Regular hand washing is one of the best ways to prevent the spread of infections.</p>
-          <button className="px-4 py-2 text-sm font-medium text-pink-600 bg-white border border-pink-200 rounded-lg hover:bg-pink-50">View More Tips</button>
+          <button className="px-4 py-2 text-sm font-medium text-pink-600 bg-white border border-pink-200 rounded-lg hover:bg-pink-50">
+            View More Tips
+          </button>
         </div>
       </div>
 
