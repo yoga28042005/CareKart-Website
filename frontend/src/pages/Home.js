@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import {
   FaShoppingCart, FaHeart, FaUser, FaHome, FaInfoCircle,
@@ -10,8 +10,8 @@ function Home() {
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [logoData, setLogoData] = useState(""); // 🩷 logo as base64
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // 🩷 mobile menu toggle
+  const [logoData, setLogoData] = useState("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,7 +21,6 @@ function Home() {
       .then((res) => { setCategories(res.data); setIsLoading(false); })
       .catch((err) => { console.error("Error fetching categories:", err); setIsLoading(false); });
 
-    // Load logo
     axios
       .get("http://56.228.36.23/api/image-base64/carekart-logo.jpeg")
       .then((res) => { setLogoData(res.data.image); })
@@ -58,13 +57,13 @@ function Home() {
 
         {/* Desktop menu */}
         <div className="items-center hidden space-x-4 text-sm font-medium text-white md:flex">
-          <a href="/" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaHome className="mr-1" /> Home</a>
-          <a href="/cart" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaShoppingCart className="mr-1" /> Cart</a>
-          <a href="/order-history" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaUser className="mr-1" /> My Profile</a>
-          <a href="/wishlist" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaHeart className="mr-1" /> Wishlist</a>
-          <a href="/about" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaInfoCircle className="mr-1" /> About</a>
-          <a href="/contact" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaPhoneAlt className="mr-1" /> Contact</a>
-          <a href="/login" className="flex items-center px-3 py-1 text-pink-600 bg-white rounded hover:bg-gray-100"><FaSignInAlt className="mr-1" /> Login</a>
+          <Link to="/" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaHome className="mr-1" /> Home</Link>
+          <Link to="/cart" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaShoppingCart className="mr-1" /> Cart</Link>
+          <Link to="/order-history" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaUser className="mr-1" /> My Profile</Link>
+          <Link to="/wishlist" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaHeart className="mr-1" /> Wishlist</Link>
+          <Link to="/about" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaInfoCircle className="mr-1" /> About</Link>
+          <Link to="/contact" className="flex items-center px-3 py-1 rounded hover:bg-pink-700"><FaPhoneAlt className="mr-1" /> Contact</Link>
+          <Link to="/login" className="flex items-center px-3 py-1 text-pink-600 bg-white rounded hover:bg-gray-100"><FaSignInAlt className="mr-1" /> Login</Link>
         </div>
 
         {/* Mobile menu button */}
@@ -81,13 +80,13 @@ function Home() {
       {/* Mobile dropdown menu */}
       {isMenuOpen && (
         <div className="z-40 flex flex-col items-start w-full px-6 py-3 space-y-2 text-sm font-medium text-white bg-pink-600 md:hidden">
-          <a href="/" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaHome className="mr-1" /> Home</a>
-          <a href="/cart" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaShoppingCart className="mr-1" /> Cart</a>
-          <a href="/order-history" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaUser className="mr-1" /> My Profile</a>
-          <a href="/wishlist" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaHeart className="mr-1" /> Wishlist</a>
-          <a href="/about" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaInfoCircle className="mr-1" /> About</a>
-          <a href="/contact" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaPhoneAlt className="mr-1" /> Contact</a>
-          <a href="/login" className="flex items-center w-full px-3 py-2 text-pink-600 bg-white rounded hover:bg-gray-100"><FaSignInAlt className="mr-1" /> Login</a>
+          <Link to="/" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaHome className="mr-1" /> Home</Link>
+          <Link to="/cart" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaShoppingCart className="mr-1" /> Cart</Link>
+          <Link to="/order-history" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaUser className="mr-1" /> My Profile</Link>
+          <Link to="/wishlist" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaHeart className="mr-1" /> Wishlist</Link>
+          <Link to="/about" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaInfoCircle className="mr-1" /> About</Link>
+          <Link to="/contact" className="flex items-center w-full px-3 py-2 rounded hover:bg-pink-700"><FaPhoneAlt className="mr-1" /> Contact</Link>
+          <Link to="/login" className="flex items-center w-full px-3 py-2 text-pink-600 bg-white rounded hover:bg-gray-100"><FaSignInAlt className="mr-1" /> Login</Link>
         </div>
       )}
 
@@ -100,7 +99,7 @@ function Home() {
             <span className="text-pink-600 inline-block animate-[zoomInOut_2s_ease-in-out_infinite]"
               style={{ animation: "zoomInOut 2s ease-in-out infinite" }}>CareKart</span>
           </h1>
-          <style jsx>{`
+          <style>{`
             @keyframes zoomInOut {
               0%,100% { transform: scale(1); }
               50% { transform: scale(1.1); }
@@ -164,9 +163,9 @@ function Home() {
         <div className="container px-4 mx-auto md:px-8">
           <div className="flex flex-col items-center justify-center">
             <div className="flex flex-wrap justify-center gap-8 mb-6">
-              <a href="/" className="hover:text-pink-200">Home</a>
-              <a href="/about" className="hover:text-pink-200">About Us</a>
-              <a href="/contact" className="hover:text-pink-200">Contact</a>
+              <Link to="/" className="hover:text-pink-200">Home</Link>
+              <Link to="/about" className="hover:text-pink-200">About Us</Link>
+              <Link to="/contact" className="hover:text-pink-200">Contact</Link>
             </div>
             <div className="text-sm text-center text-pink-200">
               © {new Date().getFullYear()} CareKart. All rights reserved.
