@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useCart } from "../contexts/CartContext";
 import { FaTrash, FaPlus, FaMinus, FaCreditCard, FaArrowLeft, FaShoppingCart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // install if not: npm install axios
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CartPage = () => {
   const {
@@ -14,11 +16,8 @@ const CartPage = () => {
   } = useCart();
 
   const navigate = useNavigate();
-
-  // 🧩 State to hold base64 images
   const [images, setImages] = useState({});
 
-  // Load base64 images on mount
   useEffect(() => {
     const loadImages = async () => {
       const newImages = {};
@@ -44,21 +43,36 @@ const CartPage = () => {
   const handleIncrease = (id, currentQuantity) => updateQuantity(id, currentQuantity + 1);
   const handleDecrease = (id, currentQuantity) => currentQuantity > 1 && updateQuantity(id, currentQuantity - 1);
 
-  const handleCheckoutAll = () => navigate("/checkout", {
-    state: { items: cartItems, totalPrice: getCartTotal() }
-  });
+  const handleCheckoutAll = () => {
+    if (cartItems.length === 0) return;
+    toast.success("🛒 Redirecting to Checkout!", { position: "top-center" });
+    navigate("/checkout", {
+      state: { items: cartItems, totalPrice: getCartTotal() }
+    });
+  };
 
   const handleCheckoutSingle = (item) => {
     const price = Number(item.price) || 0;
+    toast.success("💳 Proceeding with selected item", { position: "top-center" });
     navigate("/checkout", {
       state: { items: [item], totalPrice: (price * item.quantity).toFixed(2) }
     });
   };
 
+  const handleRemove = (id) => {
+    removeFromCart(id);
+    toast.info("❌ Item removed from cart", { position: "top-center" });
+  };
+
+  const handleClearCart = () => {
+    clearCart();
+    toast.warning("🧹 Cart has been cleared!", { position: "top-center" });
+  };
+
   return (
     <div className="min-h-screen p-4 bg-gradient-to-br from-pink-50 via-white to-green-50">
+      <ToastContainer />
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button onClick={() => navigate(-1)}
             className="flex items-center gap-2 px-4 py-2 text-pink-700 transition-colors bg-pink-100 rounded-lg hover:bg-pink-200">
@@ -82,7 +96,6 @@ const CartPage = () => {
           </div>
         ) : (
           <>
-            {/* Table */}
             <div className="p-6 bg-white shadow-lg rounded-xl">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -121,7 +134,7 @@ const CartPage = () => {
                         </td>
                         <td className="p-4 font-bold text-green-700">₹{total}</td>
                         <td className="p-4 space-y-2">
-                          <button onClick={() => removeFromCart(item.id)}
+                          <button onClick={() => handleRemove(item.id)}
                             className="flex items-center justify-center w-full gap-2 px-3 py-2 text-sm text-red-600 rounded-lg bg-red-50 hover:bg-red-100">
                             <FaTrash /> Remove
                           </button>
@@ -137,7 +150,6 @@ const CartPage = () => {
               </table>
             </div>
 
-            {/* Summary */}
             <div className="flex flex-wrap items-center justify-between gap-4 p-6 mt-8 bg-white shadow-lg rounded-xl">
               <div>
                 <h2 className="text-xl font-semibold text-gray-700">
@@ -148,7 +160,7 @@ const CartPage = () => {
                 </h2>
               </div>
               <div className="flex gap-4">
-                <button onClick={clearCart}
+                <button onClick={handleClearCart}
                   className="flex items-center gap-2 px-6 py-3 text-red-600 rounded-lg bg-red-50 hover:bg-red-100">
                   <FaTrash /> Clear Cart
                 </button>

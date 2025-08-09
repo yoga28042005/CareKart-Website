@@ -1,96 +1,129 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function OrderHistory() {
   const [orders, setOrders] = useState([]);
   const [profile, setProfile] = useState(null);
-  const [shippingInfo, setShippingInfo] = useState(null);
+  const [shippingInfo, setShippingInfo] = useState({
+    customer_name: '',
+    customer_address: '',
+    customer_city: '',
+    customer_phone: ''
+  });
   const [isEditing, setIsEditing] = useState(false);
-  const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const userId = localStorage.getItem('userId');
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!userId) {
-      alert("Please login to view order history.");
+      toast.error("Please login to view order history.");
       navigate("/login");
       return;
     }
 
-    axios.get(`http://56.228.36.23/api/user-profile/${userId}`)
-      .then(res => {
-        setProfile(res.data);
-        if (res.data.profileImage) {
-          setImagePreview(`http://56.228.36.23/uploads/${res.data.profileImage}`);
-        }
-      })
-      .catch(err => console.error("Profile fetch error:", err));
+    const fetchData = async () => {
+      try {
+        const [profileRes, ordersRes] = await Promise.all([
+          axios.get(`http://56.228.36.23/api/user-profile/${userId}`),
+          axios.get(`http://56.228.36.23/api/order-history/${userId}`)
+        ]);
 
-    axios.get(`http://56.228.36.23/api/order-history/${userId}`)
-      .then(res => {
-        if (res.data.success) {
-          setOrders(res.data.orders);
-          if (res.data.orders.length > 0) {
-            const { customer_name, customer_address, customer_city, customer_phone } = res.data.orders[0];
-            setShippingInfo({ customer_name, customer_address, customer_city, customer_phone });
+        setProfile(profileRes.data);
+
+        if (ordersRes.data.success) {
+          setOrders(ordersRes.data.orders);
+          if (ordersRes.data.orders.length > 0) {
+            const latestOrder = ordersRes.data.orders[0];
+            setShippingInfo({
+              customer_name: latestOrder.customer_name || '',
+              customer_address: latestOrder.customer_address || '',
+              customer_city: latestOrder.customer_city || '',
+              customer_phone: latestOrder.customer_phone || ''
+            });
           }
         }
-      })
-      .catch(err => console.error("Order fetch error:", err));
+      } catch (err) {
+        toast.error("Error loading data. Please try again.");
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    fetchData();
   }, [userId, navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("userId");
     localStorage.removeItem("token");
-    alert("Logged out successfully.");
-    navigate("/login");
+    toast.success("Logged out successfully!");
+    setTimeout(() => navigate("/login"), 1500);
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProfileImage(file);
-      setImagePreview(URL.createObjectURL(file));
+    if (e.target.files[0]) {
+      setImagePreview(URL.createObjectURL(e.target.files[0]));
     }
   };
 
   const handleSaveProfile = async () => {
     try {
-      const formData = new FormData();
-      formData.append('customer_name', shippingInfo.customer_name);
-      formData.append('customer_address', shippingInfo.customer_address);
-      formData.append('customer_city', shippingInfo.customer_city);
-      formData.append('customer_phone', shippingInfo.customer_phone);
-      formData.append('email', profile.email);
-      if (profileImage) {
-        formData.append('profileImage', profileImage);
-      }
-
-      const res = await axios.put(`http://56.228.36.23/api/update-user/${userId}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const toastId = toast.loading("Updating profile...");
       
-      if (res.data.success) {
-        alert("✅ Profile updated successfully");
-        setIsEditing(false);
-        if (res.data.profileImage) {
-          setImagePreview(`http://56.228.36.23/uploads/${res.data.profileImage}`);
+      const res = await axios.put(
+        `http://56.228.36.23/api/update-user/${userId}`,
+        {
+          customer_name: shippingInfo.customer_name,
+          customer_address: shippingInfo.customer_address,
+          customer_city: shippingInfo.customer_city,
+          customer_phone: shippingInfo.customer_phone,
+          email: profile.email
         }
+      );
+
+      if (res.data.success) {
+        toast.update(toastId, {
+          render: "Profile updated successfully!",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000
+        });
+        setIsEditing(false);
+        
+        // Refresh data
+        const profileRes = await axios.get(`http://56.228.36.23/api/user-profile/${userId}`);
+        setProfile(profileRes.data);
       } else {
-        alert("Update failed");
+        toast.update(toastId, {
+          render: "Failed to update profile",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000
+        });
       }
     } catch (err) {
-      console.error("Save failed:", err.response?.data || err.message);
-      alert("Something went wrong: " + (err.response?.data?.error || err.message));
+      toast.error("Something went wrong. Please try again.");
+      console.error("Update error:", err);
     }
   };
 
   return (
     <div className="min-h-screen px-4 py-10 bg-gradient-to-br from-rose-100 via-lime-100 to-sky-100">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
+      
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <button 
@@ -114,41 +147,27 @@ function OrderHistory() {
             <div className="flex flex-col gap-6 md:flex-row">
               {/* Profile Picture Section */}
               <div className="flex flex-col items-center">
-                {!isEditing ? (
-                  <div className="w-32 h-32 mb-4 overflow-hidden rounded-full shadow-md">
-                    {imagePreview ? (
-                      <img src={imagePreview} alt="Profile" className="object-cover w-full h-full" />
-                    ) : (
-                      <div className="flex items-center justify-center w-full h-full text-gray-500 bg-gray-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center">
-                    <div className="relative w-32 h-32 mb-4 overflow-hidden rounded-full shadow-md">
-                      {imagePreview ? (
-                        <img src={imagePreview} alt="Profile Preview" className="object-cover w-full h-full" />
-                      ) : (
-                        <div className="flex items-center justify-center w-full h-full text-gray-500 bg-gray-200">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                        </div>
-                      )}
+                <div className="w-32 h-32 mb-4 overflow-hidden rounded-full shadow-md">
+                  {imagePreview ? (
+                    <img src={imagePreview} alt="Profile" className="object-cover w-full h-full" />
+                  ) : (
+                    <div className="flex items-center justify-center w-full h-full text-gray-500 bg-gray-200">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
                     </div>
-                    <label className="px-4 py-2 text-sm font-medium text-white transition bg-blue-600 rounded-md cursor-pointer hover:bg-blue-700">
-                      📷 Change Photo
-                      <input 
-                        type="file" 
-                        className="hidden" 
-                        accept="image/*"
-                        onChange={handleImageChange}
-                      />
-                    </label>
-                  </div>
+                  )}
+                </div>
+                {isEditing && (
+                  <label className="px-4 py-2 text-sm font-medium text-white transition bg-blue-600 rounded-md cursor-pointer hover:bg-blue-700">
+                    📷 Change Photo
+                    <input 
+                      type="file" 
+                      className="hidden" 
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                  </label>
                 )}
               </div>
 
@@ -159,7 +178,7 @@ function OrderHistory() {
                     <div className="grid gap-2 text-gray-700">
                       <p><strong>👨‍💼 Username:</strong> {profile.username}</p>
                       <p><strong>📧 Email:</strong> {profile.email}</p>
-                      {shippingInfo ? (
+                      {shippingInfo.customer_name ? (
                         <>
                           <p><strong>🧾 Name:</strong> {shippingInfo.customer_name}</p>
                           <p><strong>🏡 Address:</strong> {shippingInfo.customer_address}, {shippingInfo.customer_city}</p>
@@ -170,14 +189,12 @@ function OrderHistory() {
                       )}
                     </div>
                     <div className="flex flex-wrap gap-4 mt-6">
-                      {shippingInfo && (
-                        <button
-                          onClick={() => setIsEditing(true)}
-                          className="px-5 py-2 font-medium text-yellow-900 transition bg-yellow-200 rounded-md shadow hover:bg-yellow-300"
-                        >
-                          ✏️ Edit Profile
-                        </button>
-                      )}
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className="px-5 py-2 font-medium text-yellow-900 transition bg-yellow-200 rounded-md shadow hover:bg-yellow-300"
+                      >
+                        ✏️ Edit Profile
+                      </button>
                       <button
                         onClick={handleLogout}
                         className="px-5 py-2 font-medium text-red-900 transition bg-red-200 rounded-md shadow hover:bg-red-300"
@@ -195,7 +212,7 @@ function OrderHistory() {
                           type="text"
                           className="w-full p-2 border rounded"
                           value={shippingInfo.customer_name}
-                          onChange={(e) => setShippingInfo({ ...shippingInfo, customer_name: e.target.value })}
+                          onChange={(e) => setShippingInfo({...shippingInfo, customer_name: e.target.value})}
                         />
                       </div>
                       <div>
@@ -204,7 +221,7 @@ function OrderHistory() {
                           type="text"
                           className="w-full p-2 border rounded"
                           value={shippingInfo.customer_address}
-                          onChange={(e) => setShippingInfo({ ...shippingInfo, customer_address: e.target.value })}
+                          onChange={(e) => setShippingInfo({...shippingInfo, customer_address: e.target.value})}
                         />
                       </div>
                       <div>
@@ -213,7 +230,7 @@ function OrderHistory() {
                           type="text"
                           className="w-full p-2 border rounded"
                           value={shippingInfo.customer_city}
-                          onChange={(e) => setShippingInfo({ ...shippingInfo, customer_city: e.target.value })}
+                          onChange={(e) => setShippingInfo({...shippingInfo, customer_city: e.target.value})}
                         />
                       </div>
                       <div>
@@ -222,7 +239,7 @@ function OrderHistory() {
                           type="text"
                           className="w-full p-2 border rounded"
                           value={shippingInfo.customer_phone}
-                          onChange={(e) => setShippingInfo({ ...shippingInfo, customer_phone: e.target.value })}
+                          onChange={(e) => setShippingInfo({...shippingInfo, customer_phone: e.target.value})}
                         />
                       </div>
                       <div className="sm:col-span-2">
@@ -231,7 +248,7 @@ function OrderHistory() {
                           type="email"
                           className="w-full p-2 border rounded"
                           value={profile.email}
-                          onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                          onChange={(e) => setProfile({...profile, email: e.target.value})}
                         />
                       </div>
                     </div>

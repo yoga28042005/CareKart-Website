@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -22,67 +24,78 @@ function Login() {
 
     try {
       const res = await axios.post('http://56.228.36.23/login', { username, password });
+
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("userId", res.data.userId);
-      alert(res.data.message);
-      navigate('/home');
+
+      toast.success('✅ Login Successful!', {
+        position: "top-center",
+        autoClose: 2000,
+        pauseOnHover: false,
+        onClose: () => navigate('/home')
+      });
+
     } catch (err) {
-      alert(err.response?.data?.error || 'Login failed');
+      toast.error(err.response?.data?.error || '❌ Login failed', {
+        position: "top-center",
+        autoClose: 2500,
+        pauseOnHover: false,
+      });
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 bg-gradient-to-r from-purple-200 to-pink-100">
-      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
-        <h2 className="mb-6 text-3xl font-bold text-center text-purple-700">Login</h2>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-200 to-blue-200">
+      <ToastContainer />
+      <div className="w-full max-w-sm p-8 bg-white shadow-lg rounded-xl">
+        <h2 className="mb-6 text-3xl font-bold text-center text-purple-800">Login</h2>
+
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label htmlFor="username" className="block mb-1 font-medium text-gray-700">Username</label>
+            <label className="block mb-1 font-medium text-gray-700">Username</label>
             <input
-              id="username"
               type="text"
-              placeholder="Enter your username"
               value={username}
+              placeholder="Enter username"
               onChange={(e) => {
                 setUsername(e.target.value);
                 setErrors({ ...errors, username: '' });
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
             {errors.username && (
-              <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.username}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="password" className="block mb-1 font-medium text-gray-700">Password</label>
+            <label className="block mb-1 font-medium text-gray-700">Password</label>
             <input
-              id="password"
               type="password"
-              placeholder="Enter your password"
               value={password}
+              placeholder="Enter password"
               onChange={(e) => {
                 setPassword(e.target.value);
                 setErrors({ ...errors, password: '' });
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
             {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.password}</p>
             )}
           </div>
 
           <button
             type="submit"
-            className="w-full py-2 text-white transition bg-purple-600 rounded hover:bg-purple-700"
+            className="w-full py-2 font-semibold text-white transition duration-300 bg-purple-700 rounded-md hover:bg-purple-800"
           >
             Login
           </button>
         </form>
 
-        <p className="mt-6 text-sm text-center text-gray-600">
-          Don't have an account?{' '}
-          <Link to="/signup" className="text-purple-600 hover:underline">
+        <p className="mt-5 text-sm text-center">
+          Don't have an account?{" "}
+          <Link to="/signup" className="font-medium text-purple-700 hover:underline">
             Signup
           </Link>
         </p>

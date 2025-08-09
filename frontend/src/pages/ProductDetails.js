@@ -3,7 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
-import { FaBars, FaTimes, FaHome, FaUser, FaShoppingCart, FaHeart, FaInfoCircle, FaPhoneAlt } from 'react-icons/fa';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import {
+  FaBars, FaTimes, FaHome, FaUser, FaShoppingCart, FaHeart,
+  FaInfoCircle, FaPhoneAlt
+} from 'react-icons/fa';
 
 function ProductDetails() {
   const { id } = useParams();
@@ -47,25 +52,29 @@ function ProductDetails() {
   const handleAddToCart = () => {
     if (!product) return;
     addToCart(product, quantity);
-    alert(`Added ${quantity} ${product.name}(s) to cart`);
+    toast.success(`🛒 Added ${quantity} ${product.name}(s) to cart`);
   };
 
   const handleBuyNow = () => {
     if (!product) return;
-    navigate('/checkout', {
-      state: { items: [{ ...product, quantity }], totalPrice: product.price * quantity },
-    });
+    toast.info('🚀 Redirecting to checkout...');
+    setTimeout(() => {
+      navigate('/checkout', {
+        state: { items: [{ ...product, quantity }], totalPrice: product.price * quantity },
+      });
+    }, 800);
   };
 
   const handleStarClick = (star) => setRating(prev => (prev === star ? 0 : star));
+
   const handleWishlistToggle = () => {
     if (!product) return;
     if (isInWishlist) {
       removeFromWishlist(product.id);
-      alert('Removed from Wishlist');
+      toast.info('💔 Removed from Wishlist');
     } else {
       addToWishlist(product);
-      alert('Added to Wishlist');
+      toast.success('❤️ Added to Wishlist');
     }
   };
 
@@ -85,6 +94,8 @@ function ProductDetails() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
+      <ToastContainer position="top-center" />
+
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 text-white shadow-md bg-gradient-to-r from-pink-600 to-purple-600 h-14">
         <div className="text-2xl font-bold cursor-pointer" onClick={() => navigate('/')}>CareKart</div>
@@ -134,6 +145,7 @@ function ProductDetails() {
               <span className="text-sm text-gray-600">Add to wishlist:</span>
               <span onClick={handleWishlistToggle} className={`text-3xl cursor-pointer ${isInWishlist ? 'text-pink-600' : 'text-gray-300'}`}>♥</span>
             </div>
+
             {/* Quantity */}
             <div className="flex items-center gap-4 p-4 rounded-lg bg-pink-50">
               <label className="text-base font-medium text-gray-700">Quantity:</label>
@@ -141,16 +153,21 @@ function ProductDetails() {
               <span className="px-4 py-1 bg-white border rounded-md">{quantity}</span>
               <button onClick={() => setQuantity(q => Math.min(product.stock_quantity, q + 1))} disabled={quantity >= product.stock_quantity} className="w-8 h-8 text-lg text-white bg-pink-600 rounded-full hover:bg-pink-700">+</button>
             </div>
+
             {/* Rating */}
             <div className="p-4 rounded-lg bg-pink-50">
               <label className="block mb-2 font-medium text-gray-700">Rate this product:</label>
-              <div className="flex gap-1">{[1,2,3,4,5].map(star => <span key={star} onClick={() => handleStarClick(star)} className={`text-3xl cursor-pointer ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}>★</span>)}</div>
+              <div className="flex gap-1">{[1, 2, 3, 4, 5].map(star => (
+                <span key={star} onClick={() => handleStarClick(star)} className={`text-3xl cursor-pointer ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}>★</span>
+              ))}</div>
             </div>
+
             {/* Buttons */}
             <div className="flex flex-wrap gap-4 mt-4">
               <button onClick={handleAddToCart} className="flex-1 px-6 py-3 text-white rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600">Add to Cart</button>
               <button onClick={handleBuyNow} disabled={product.stock_quantity === 0} className="flex-1 px-6 py-3 text-white rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600">Buy Now</button>
             </div>
+
             {/* Enjoy text */}
             <p className="mt-4 text-sm italic text-center text-pink-600">Enjoy anywhere & anytime</p>
           </div>

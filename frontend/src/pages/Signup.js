@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Signup() {
   const [form, setForm] = useState({ username: '', email: '', password: '' });
@@ -24,7 +26,7 @@ function Signup() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
-    setErrors({ ...errors, [name]: '' }); // Clear error when typing
+    setErrors({ ...errors, [name]: '' });
   };
 
   const handleSignup = async (e) => {
@@ -33,77 +35,77 @@ function Signup() {
 
     try {
       await axios.post('http://56.228.36.23/signup', form);
-      alert('Signup successful');
-      navigate('/login');
+
+      toast.success('🎉 Signup Successful!', {
+        position: 'top-center',
+        autoClose: 2000,
+        onClose: () => navigate('/login')
+      });
     } catch (err) {
-      alert(err.response?.data?.error || 'Signup failed');
+      toast.error(err.response?.data?.error || '❌ Signup failed', {
+        position: 'top-center',
+        autoClose: 3000
+      });
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 bg-gradient-to-r from-pink-200 to-purple-200">
-      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-pink-200 via-purple-200 to-blue-200">
+      <ToastContainer />
+      <div className="w-full max-w-md p-8 bg-white shadow-lg rounded-xl">
         <h2 className="mb-6 text-3xl font-bold text-center text-purple-700">Signup</h2>
+
         <form onSubmit={handleSignup} className="space-y-5">
           <div>
-            <label htmlFor="username" className="block mb-1 font-medium text-gray-700">Username</label>
+            <label className="block mb-1 font-medium text-gray-700">Username</label>
             <input
-              id="username"
               type="text"
               name="username"
-              placeholder="Username"
+              placeholder="Enter username"
               value={form.username}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
-            {errors.username && (
-              <p className="mt-1 text-sm text-red-600">{errors.username}</p>
-            )}
+            {errors.username && <p className="mt-1 text-xs text-red-500">{errors.username}</p>}
           </div>
 
           <div>
-            <label htmlFor="email" className="block mb-1 font-medium text-gray-700">Email</label>
+            <label className="block mb-1 font-medium text-gray-700">Email</label>
             <input
-              id="email"
               type="email"
               name="email"
-              placeholder="Email"
+              placeholder="Enter email"
               value={form.email}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-            )}
+            {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
           </div>
 
           <div>
-            <label htmlFor="password" className="block mb-1 font-medium text-gray-700">Password</label>
+            <label className="block mb-1 font-medium text-gray-700">Password</label>
             <input
-              id="password"
               type="password"
               name="password"
-              placeholder="Password"
+              placeholder="Enter password"
               value={form.password}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-            )}
+            {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
           </div>
 
           <button
             type="submit"
-            className="w-full py-2 text-white transition bg-purple-600 rounded hover:bg-purple-700"
+            className="w-full py-2 font-semibold text-white transition bg-purple-700 rounded-md hover:bg-purple-800"
           >
             Signup
           </button>
         </form>
 
-        <p className="mt-6 text-sm text-center text-gray-600">
+        <p className="mt-5 text-sm text-center">
           Already have an account?{" "}
-          <Link to="/login" className="text-purple-600 hover:underline">
+          <Link to="/login" className="font-medium text-purple-700 hover:underline">
             Login
           </Link>
         </p>

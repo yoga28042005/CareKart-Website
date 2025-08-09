@@ -189,6 +189,7 @@ app.post('/api/update-stock', async (req, res) => {
     await connection.beginTransaction();
 
     const [results] = await connection.execute(
+
       'SELECT stock_quantity FROM products WHERE id = ? FOR UPDATE',
       [productId]
     );
