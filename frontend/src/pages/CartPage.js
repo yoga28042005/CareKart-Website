@@ -96,7 +96,8 @@ const CartPage = () => {
           </div>
         ) : (
           <>
-            <div className="p-6 bg-white shadow-lg rounded-xl">
+            {/* Desktop Table */}
+            <div className="hidden p-6 overflow-x-auto bg-white shadow-lg md:block rounded-xl">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="text-gray-700 bg-gradient-to-r from-pink-100 to-green-100">
@@ -148,6 +149,50 @@ const CartPage = () => {
                   })}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="space-y-4 md:hidden">
+              {cartItems.map(item => {
+                const price = Number(item.price) || 0;
+                const total = (price * item.quantity).toFixed(2);
+                return (
+                  <div key={item.id} className="p-4 bg-white shadow-md rounded-xl">
+                    <div className="flex items-center gap-4">
+                      <img src={images[item.id] || "https://via.placeholder.com/100"} alt={item.name}
+                        className="object-cover w-20 h-20 rounded-lg shadow-sm" />
+                      <div className="flex-1">
+                        <h3 className="font-medium text-gray-700">{item.name}</h3>
+                        <p className="font-semibold text-green-600">₹{price.toFixed(2)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => handleDecrease(item.id, item.quantity)}
+                          className="flex items-center justify-center w-8 h-8 text-pink-600 bg-pink-100 rounded-full hover:bg-pink-200">
+                          <FaMinus className="text-xs" />
+                        </button>
+                        <span className="w-8 text-center">{item.quantity}</span>
+                        <button onClick={() => handleIncrease(item.id, item.quantity)}
+                          className="flex items-center justify-center w-8 h-8 text-pink-600 bg-pink-100 rounded-full hover:bg-pink-200">
+                          <FaPlus className="text-xs" />
+                        </button>
+                      </div>
+                      <span className="font-bold text-green-700">₹{total}</span>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button onClick={() => handleRemove(item.id)}
+                        className="flex items-center justify-center w-1/2 gap-2 px-3 py-2 text-sm text-red-600 rounded-lg bg-red-50 hover:bg-red-100">
+                        <FaTrash /> Remove
+                      </button>
+                      <button onClick={() => handleCheckoutSingle(item)}
+                        className="flex items-center justify-center w-1/2 gap-2 px-3 py-2 text-sm text-white rounded-lg bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700">
+                        <FaCreditCard /> Checkout
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-4 p-6 mt-8 bg-white shadow-lg rounded-xl">
