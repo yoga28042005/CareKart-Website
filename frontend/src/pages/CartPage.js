@@ -77,7 +77,7 @@ const CartPage = () => {
           <button onClick={() => navigate(-1)}
             className="flex items-center gap-2 px-4 py-2 text-pink-700 transition-colors bg-pink-100 rounded-lg hover:bg-pink-200">
             <FaArrowLeft /> Back
-          </button>
+          </button><br/><br/><br/>
           <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-green-600">
             Your Shopping Cart
           </h1>
